@@ -1,0 +1,14 @@
+[
+  {
+    "id": "record-your-own-001",
+    "audio_file": "samples/record-your-own-001.wav",
+    "reference": "Bghit ndir video 3la service dyali",
+    "expected_intent": "video_script",
+    "language_mixture": "darija-latin",
+    "technical_vocabulary": ["video", "service"],
+    "category": "quiet_workshop",
+    "transcription": null,
+    "predicted_intent": null,
+    "native_speaker_tts_ratings": []
+  }
+]

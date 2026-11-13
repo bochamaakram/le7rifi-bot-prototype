@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.sqlite*
+.dart_tool/
+build/
+.coverage
+*.egg-info/
+local.properties
+*.jks
+*.keystore
+backups/
+artifacts/

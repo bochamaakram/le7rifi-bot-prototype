@@ -1,5 +1,8 @@
 # Deployment
 
+For shared cPanel hosting, follow [the o2switch setup](O2SWITCH.md). It uses
+Passenger with an ASGI-to-WSGI adapter and keeps the database on Supabase.
+
 ## Supabase PostgreSQL
 
 Use Supabase as the hosted database with the existing FastAPI backend. No Supabase client package or Flutter credentials are required. Select a direct connection or session pooler for this persistent backend and migrations; connection availability depends on IPv4/IPv6 support. See [Supabase connection guidance](https://supabase.com/docs/guides/database/connecting-to-postgres).

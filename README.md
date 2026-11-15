@@ -116,4 +116,7 @@ The smoke script requires review of the transcription, then saves generated MP3 
 
 ## Project notes
 
+For o2switch shared hosting, use the [cPanel deployment guide](docs/O2SWITCH.md).
+Create the source-only upload zip with `.venv/bin/python scripts/package_o2switch.py`.
+
 [Architecture](docs/ARCHITECTURE.md) · [API](docs/API_CONTRACT.md) · [SaaS integration](docs/SAAS_INTEGRATION.md) · [Security/privacy](docs/SECURITY.md) · [Deployment](docs/DEPLOYMENT.md) · [Status](docs/IMPLEMENTATION_STATUS.md)

@@ -1,5 +1,22 @@
 # Implementation status
 
+## Cortex-inspired pastel UI & visual redesign — 2026-11-15
+
+- Redesigned the Flutter client to match the modern, dreamy pastel aesthetic and layout of the reference interface (`inspo/image.png`):
+  - Added [`AtmosphericBackground`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/chat/widgets/atmospheric_background.dart): soft lilac, pink-violet, and lavender cloud gradient backdrop.
+  - Implemented [`LuminousOrb`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/chat/widgets/luminous_orb.dart): 3D iridescent lavender-purple sphere with specular top-left highlight, ambient halo, and soft breathing animation (disabled automatically during widget testing).
+  - Built [`AppSidebar`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/chat/widgets/app_sidebar.dart): responsive sidebar for wide displays (and drawer for mobile) featuring the purple sparkle logo, dark contrast "+ محادثة جديدة" ("+ New chat") pill button, search box with `⌘K` badge, navigation links (استكشاف, المكتبة, معلومات الحرفة, السجل), grouped history list, and user profile footer.
+  - Revamped [`ChatScreen`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/chat/chat_screen.dart):
+    - Top bar: model selector pill ("الحريفي AI ▾"), export chat button, and high-contrast beta/upgrade button.
+    - Welcoming hero: warm greeting ("السلام عليكم، الحريفي" / "كيفاش نقدر نعاونك اليوم؟") with the floating luminous orb.
+    - Redesigned prompt card: subtle shadow, rounded corners (24), "بحث متقدم" ("Deeper Research") lilac pill, quick tools, "+ أفكار مسجلة", "إرفاق ملف", and glowing circular purple voice/mic button.
+    - 3 Quick Action Cards: "تلخيص ومعلومات" ("Synthesize Data"), "عصف ذهني إبداعي" ("Creative Brainstorm"), and "استشارة وحساب الثمن" ("Check Facts") with one-tap prompt insertion.
+  - Upgraded [`appTheme`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/core/theme/app_theme.dart) with the lavender/purple palette (`Color(0xFF7C3AED)`, `Color(0xFF8B5CF6)`, `Color(0xFFEDE6F8)`), updated [`LoginScreen`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/onboarding/login_screen.dart), [`SettingsScreen`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/settings/settings_screen.dart), [`BusinessScreen`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/business_context/business_screen.dart), and [`HistoryScreen`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/lib/features/conversations/history_screen.dart) with matching cards and tokens.
+- All existing voice-first capabilities, audio state machine, and sandbox notices were preserved.
+- Validation:
+  - **10 Flutter tests passed** (including 4 new widget tests in [`cortex_vibe_test.dart`](file:///home/akram/Desktop/le7rifi-bot-prototype/mobile/test/cortex_vibe_test.dart)).
+  - **`flutter analyze` exited with 0 issues** (resolved all 21 previous informational findings).
+
 ## o2switch shared-hosting preparation — 2026-11-15
 
 - Prepared for the documented cPanel Setup Python App / Passenger WSGI path, assuming shared hosting until the account type is confirmed. Added optional `o2switch` dependency extra (`a2wsgi`), `backend/passenger_wsgi.py` and `app/passenger.py`. The HTTP adapter explicitly validates production JWT configuration before serving and disposes an existing DB engine on exit because WSGI does not dispatch ASGI lifespan. Development login is refused by this entry point. WebSockets are unsupported; current endpoints use REST.

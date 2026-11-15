@@ -15,3 +15,4 @@ local.properties
 *.keystore
 backups/
 artifacts/
+inspo/

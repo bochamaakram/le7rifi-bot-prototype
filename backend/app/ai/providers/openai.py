@@ -15,12 +15,12 @@ class OpenAIProvider:
         self.settings = settings
 
     async def request(self, path: str, **kwargs) -> httpx.Response:
-        if not self.settings.ai_api_key:
+        if not self.settings.provider_api_key:
             raise ProviderError("provider_not_configured")
         try:
             async with httpx.AsyncClient(timeout=self.settings.provider_timeout_seconds) as client:
-                response = await client.post(self.settings.ai_base_url.rstrip("/") + path,
-                                             headers={"Authorization": f"Bearer {self.settings.ai_api_key}"}, **kwargs)
+                response = await client.post(self.settings.provider_base_url.rstrip("/") + path,
+                                             headers={"Authorization": f"Bearer {self.settings.provider_api_key}"}, **kwargs)
                 response.raise_for_status()
                 return response
         except httpx.HTTPError:

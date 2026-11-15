@@ -36,15 +36,38 @@ python -m venv .venv
 pip install -e './backend[test]'
 # Set DATABASE_URL in .env to the local DB host and restricted app role.
 cd backend
-# Backend reads .env relative to cwd:
-set -a
-. ../.env
-set +a
+# Backend loads the repository-root .env automatically.
 alembic upgrade head
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log
 ```
 
 Do not run application queries as the PostgreSQL superuser: that bypasses RLS. The database administrator installs pgvector before migrations; the application role owns its tables, with forced row policies.
+
+## AgentRouter and Supabase
+
+Backend configuration accepts these server-side variables in the root `.env`:
+
+```dotenv
+AGENTROUTER_API_KEY=your-agentrouter-key
+AGENTROUTER_BASE_URL=https://agentrouter.org/v1
+SUPABASE_DATABASE_URL=postgresql://restricted_role:URL_ENCODED_PASSWORD@YOUR_DB_HOST:5432/postgres?sslmode=require
+```
+
+When nonempty, `AGENTROUTER_API_KEY` selects `AGENTROUTER_BASE_URL` and takes precedence over the legacy `AI_API_KEY` / `AI_BASE_URL` pair. Set `LLM_MODEL`, `STT_MODEL`, `TTS_MODEL`, `TTS_VOICE` and `EMBEDDING_MODEL` to models supported by your account. All four adapters currently use the selected endpoint/key; chat availability alone does not establish audio or embedding support. Unsupported services return provider errors; no alternate paid provider is selected automatically. AgentRouter's [official docs](https://github.com/agentrouter-org/docs) describe its OpenAI-compatible interface; no live compatibility test has been run here.
+
+Supabase is used as PostgreSQL storage through SQLAlchemy, with the existing pgvector schema and forced RLS. A nonempty `SUPABASE_DATABASE_URL` takes precedence over `DATABASE_URL`; either accepts `postgres://`, `postgresql://` or `postgresql+psycopg://`. Password encoding and query parameters are preserved. Supabase project URLs, publishable/anon keys and service-role API keys cannot replace the PostgreSQL connection string. These credentials belong only on the backend. Supabase Auth is not wired into the app by this configuration.
+
+Follow the [Supabase deployment steps](docs/DEPLOYMENT.md#supabase-postgresql) before running migrations. For hosted storage, start the backend locally with the virtualenv commands above; the default Compose stack still starts its own local database.
+
+After setting `SUPABASE_DATABASE_URL`, start from the repository root with:
+
+```sh
+sh scripts/run_backend.sh
+```
+
+This uses the project virtualenv, checks configuration and runs migrations before starting the API. It stops on migration failure. Supabase project URLs and publishable/secret API keys do not supply a database password or connection string. When those project settings exist but storage still targets localhost, the script reports the missing database configuration.
+
+If startup reports a short `DEV_TOKEN`, generate a random token with `python -c 'import secrets; print(secrets.token_urlsafe(48))'` and save it as `DEV_TOKEN` in your local `.env`. Use that same token on the app's development login screen. Keep it private; Supabase storage does not change the current development login.
 
 ## Android client
 

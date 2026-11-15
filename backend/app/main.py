@@ -59,7 +59,7 @@ def ready():
         with engine().connect() as connection:
             connection.execute(text("SELECT 1 FROM conversations LIMIT 0"))
         return {"status": "ready", "saas_mode": get_settings().saas_mode,
-                "ai_configured": bool(get_settings().ai_api_key)}
+                "ai_configured": bool(get_settings().provider_api_key)}
     except Exception:
         return JSONResponse({"error": "database_unavailable"}, status_code=503)
 

@@ -1,5 +1,33 @@
 # Implementation status
 
+## Supabase session pooler connected — 2026-11-15
+
+- Updated ignored local `.env` to the user-supplied session-pooler host on port 5432, with `le7rayfi.PROJECT_REF` username and TLS. Preserved the saved password without printing it. This replaces the direct host that failed on the user's IPv6-unreachable network and corrects the administrative username rejected by settings.
+- Live connection succeeded outside sandbox network restrictions. PostgreSQL confirmed the connected role is neither superuser nor `BYPASSRLS`.
+- Applied Alembic migrations successfully to the configured project: revision **0001**. Read-only catalog checks confirmed every application model's table has both enabled and forced RLS.
+- These are live connection/migration/catalog checks, not the dedicated PostgreSQL isolation suite. That suite remains pending a separate `TEST_DATABASE_URL`; it was not pointed at this application project. No paid AI calls or device tests were performed. No application code changed, so the previously recorded automated test results remain unchanged.
+
+## Supabase startup configuration — 2026-11-15
+
+- Replaced the local four-character development token with a random token in ignored `.env`; no token value was printed. Local file permissions restricted to its owner. Development login still uses this token; Supabase Auth is not integrated.
+- Supabase database configuration now validates PostgreSQL URI fields, requires TLS, rejects built-in administrative usernames, and hides configuration inputs from validation tracebacks. Actual role privileges still require database verification.
+- Added `scripts/run_backend.sh`: uses the project virtualenv, checks settings, reports API-key/local-database mismatch, applies migrations, and starts Uvicorn only on success. README and deployment docs include restricted-role SQL and session-pooler URI instructions.
+- Isolated backend automated tests from local database/provider credentials. Backend pytest: **29 passed, 1 skipped, 7 subtests passed**. PostgreSQL isolation skipped because no dedicated `TEST_DATABASE_URL` was available. Flutter tests: **6 passed**. Flutter analysis: exit 1 with **21 existing informational lint findings**. Shell syntax and diff whitespace checks passed. Tests needed execution outside sandbox restrictions; no paid provider calls were made.
+- Local saved `SUPABASE_DATABASE_URL` initially contained an API/project URL. After the user supplied a direct PostgreSQL host, saved that host with TLS, the dedicated `le7rayfi` role and an explicit password placeholder in ignored `.env`. The user must provision this role using the documented SQL and replace the placeholder with that role's password. URI fields were checked locally; no Supabase connection or hosted migration has been executed. Direct-host network reachability remains unverified.
+
+## AgentRouter / Supabase configuration — 2026-11-13
+
+- Added `AGENTROUTER_API_KEY` and `AGENTROUTER_BASE_URL` (default `https://agentrouter.org/v1`). A nonempty AgentRouter key selects its own endpoint and overrides legacy AI configuration. Readiness checks the selected key.
+- Added `SUPABASE_DATABASE_URL` override and normalization of standard PostgreSQL URIs to psycopg 3, preserving encoded passwords and TLS options. Existing SQLAlchemy/pgvector storage, identity scoping and forced RLS remain in use. Supabase REST keys and Supabase Auth are not integrated.
+- Root `.env` now loads when starting from `backend/`; process environment overrides dotenv. Database URLs, AI keys and dev tokens are excluded from settings repr. No secrets were displayed or modified. The existing `.env.example` deletion was preserved.
+- README and deployment documentation cover hosted database setup with a restricted role, pgvector and model compatibility limitations. All four AI adapters share the selected gateway; AgentRouter audio/embedding and model support remain unverified.
+- Eight new configuration/HTTP transport tests use mocked HTTP and cover endpoint/key precedence, URI normalization, secret repr, dotenv loading and safe errors.
+- Backend dependencies installed with network access. Full pytest outside the sandbox: **22 passed, 1 skipped, 7 subtests passed**. PostgreSQL isolation skipped: no dedicated `TEST_DATABASE_URL`. Initial sandbox HTTP tests stalled. Python compileall and diff whitespace checks passed.
+- Flutter tests: **6 passed**. Analysis returned exit 1 with **21 existing informational lint findings** concerning braces and async BuildContext use. Validation required access to the shared SDK cache outside the sandbox. Mobile source was not changed.
+- The inspected workspace `.env` lacked `AGENTROUTER_API_KEY` and `SUPABASE_DATABASE_URL`; its database URL targeted a local host. No hosted migrations, live database/provider calls or speech evaluation were performed. No paid provider requests were made.
+
+The earlier history below records the initial environment; dependency installation and Flutter testing are now available as reported above. Live database, Android device and Darija evaluation work remains outstanding.
+
 Updated 2026-11-13. This is the first implementation increment. **The end-to-end voice milestone is implemented in source but not yet validated and is not marked complete.** No production or speech-quality claim is made.
 
 ## Phase 0 — inspection and setup

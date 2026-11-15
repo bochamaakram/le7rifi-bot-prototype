@@ -1,5 +1,46 @@
 # Deployment
 
+## Supabase PostgreSQL
+
+Use Supabase as the hosted database with the existing FastAPI backend. No Supabase client package or Flutter credentials are required. Select a direct connection or session pooler for this persistent backend and migrations; connection availability depends on IPv4/IPv6 support. See [Supabase connection guidance](https://supabase.com/docs/guides/database/connecting-to-postgres).
+
+1. Use a dedicated development project. As its administrator, enable pgvector (`vector`) in the `public` schema before application migrations. Existing models use unqualified `vector` types, so an extension in another schema must be accessible through the application role's search path.
+2. Create a dedicated login role with `NOSUPERUSER NOBYPASSRLS`, access to the database, and `USAGE, CREATE` on the schema used by the app. Use this same restricted role to own the migrated tables and run the API. Do not use the default `postgres` administration connection for application requests. See [Supabase role documentation](https://supabase.com/docs/guides/database/postgres/roles).
+3. Set `SUPABASE_DATABASE_URL` (or `DATABASE_URL`) to that role's connection URI with its URL-encoded password and TLS enabled (`sslmode=require`, or certificate-verified TLS as provisioned). Preserve the dashboard host/port format and adapt its username for the dedicated role; session pooler usernames include the project reference. Keep application tables outside Data API exposure where possible, and do not grant access to `anon` or `authenticated`: the app's policies depend on backend transaction-local identity, not Supabase client claims.
+4. From the backend directory run `alembic upgrade head`, then start Uvicorn as shown in the README. Configuration loads the root `.env` automatically and environment variables override dotenv values. Migrations only target this application's tables, all with forced RLS.
+5. Check `/ready`, then validate isolation on a separate migrated test database with a restricted role and `TEST_DATABASE_URL`. Never use the live application project for automated isolation tests.
+
+This configures storage only. Mobile login and SaaS identity remain as documented; Supabase Auth and production SaaS integration are pending. Hosted migrations, TLS connectivity and RLS have not been validated against a supplied Supabase project.
+
+### Prepare the application role
+
+In a dedicated development project's SQL editor, run the following as its database administrator. Replace the password placeholder locally with a unique random database password; do not commit it:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+CREATE ROLE le7rayfi LOGIN PASSWORD 'REPLACE_WITH_RANDOM_DATABASE_PASSWORD'
+    NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
+GRANT CONNECT ON DATABASE postgres TO le7rayfi;
+GRANT USAGE, CREATE ON SCHEMA public TO le7rayfi;
+```
+
+This is one-time provisioning, not a script to rerun over an existing role. If pgvector is already installed in `extensions`, make it available to the role without relocating it:
+
+```sql
+GRANT USAGE ON SCHEMA extensions TO le7rayfi;
+ALTER ROLE le7rayfi SET search_path = public, extensions;
+```
+
+Copy the session pooler host from **Connect** in the dashboard. Use `le7rayfi.PROJECT_REF` as the pooler username (direct connections use `le7rayfi`), URL-encode the password, and save the result only in `.env`:
+
+```dotenv
+SUPABASE_DATABASE_URL=postgresql://le7rayfi.PROJECT_REF:ENCODED_PASSWORD@DASHBOARD_SESSION_POOLER_HOST:5432/postgres?sslmode=require
+```
+
+Settings reject the built-in `postgres`/`supabase_admin` roles and missing TLS for `SUPABASE_DATABASE_URL`. The actual custom role must also have no inherited bypass privileges. Start with `sh scripts/run_backend.sh` from the repository root; it will not start Uvicorn if configuration or migrations fail. `DEV_TOKEN` must still contain at least 32 characters for development login. Open `.env` locally to copy it into the app; do not put provider keys or database credentials into the phone app.
+
+## VPS with local PostgreSQL
+
 Use one small VPS and Compose, one API worker, PostgreSQL persistent storage and Caddy. No GPU. Size the machine after measuring PDF ingestion and concurrent cloud requests; no capacity claim is established yet.
 
 1. Install Docker Engine/Compose on the host. Copy source and `.env.example` to `.env` with restrictive file permissions. Generate independent random database/access credentials. URL-encode the app database password in `DATABASE_URL`.
